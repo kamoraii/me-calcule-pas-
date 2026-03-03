@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- Favicon standard (remplace favicon.jpg par ton image) -->
+  <link rel="icon" type="image/jpeg" href="favicon.jpg">
+  <title>rythme & calcul · dictée vocale</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: linear-gradient(145deg, #0f0f1a 0%, #1a1a2f 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+      padding: 10px;
+      margin: 0;
+      background-image: repeating-linear-gradient(45deg, rgba(255, 215, 0, 0.02) 0px, rgba(255, 215, 0, 0.02) 20px, rgba(255, 105, 180, 0.02) 20px, rgba(255, 105, 180, 0.02) 40px);
+    }
+
+    .calculator {
+      max-width: 420px;
+      width: 100%;
+      background: rgba(25, 25, 40, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 48px;
+      padding: 24px 16px 30px;
+      box-shadow: 0 30px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .display {
+      background: #0b0b12;
+      border-radius: 32px;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+      text-align: right;
+      font-size: clamp(3rem, 15vw, 5rem);
+      font-weight: 500;
+      color: #f2eee9;
+      letter-spacing: 2px;
+      line-height: 1.2;
+      word-wrap: break-word;
+      min-height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      box-shadow: inset 0 5px 0 #00000033, 0 8px 0 #0000004d;
+      border-bottom: 2px solid #ffb34730;
+      text-shadow: 0 0 8px #ffb34766;
+      font-family: 'Courier New', monospace;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    button {
+      background: #2c2c42;
+      border: none;
+      padding: 22px 8px;
+      border-radius: 28px;
+      font-size: 2rem;
+      font-weight: 500;
+      color: #eaeef2;
+      box-shadow: 0 7px 0 #12121c, 0 8px 12px rgba(0, 0, 0, 0.4);
+      transition: all 0.08s ease-in;
+      cursor: pointer;
+      touch-action: manipulation;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      background: radial-gradient(circle at 30% 20%, #3e3e5e, #1f1f32);
+      border-bottom: 2px solid #ffb34730;
+      font-family: inherit;
+    }
+
+    button:active {
+      transform: translateY(5px);
+      box-shadow: 0 2px 0 #0b0b12, 0 5px 10px rgba(0, 0, 0, 0.4);
+      background: radial-gradient(circle at 30% 20%, #4f4f77, #2a2a44);
+    }
+
+    .operator {
+      background: radial-gradient(circle at 30% 20%, #cc7f2a, #9e571b);
+      color: #fff3e0;
+      font-weight: 600;
+      box-shadow: 0 7px 0 #633e10, 0 8px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .operator:active {
+      background: radial-gradient(circle at 30% 20%, #e0943c, #b46b28);
+      transform: translateY(5px);
+      box-shadow: 0 2px 0 #4f2f0c, 0 5px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .equals {
+      background: radial-gradient(circle at 30% 20%, #3cb371, #1e6b3b);
+      box-shadow: 0 7px 0 #124d2a, 0 8px 12px rgba(0, 0, 0, 0.4);
+      color: white;
+    }
+
+    .equals:active {
+      background: radial-gradient(circle at 30% 20%, #4fcf8b, #2b8e4c);
+      transform: translateY(5px);
+      box-shadow: 0 2px 0 #0f3b1f, 0 5px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .mic {
+      background: radial-gradient(circle at 30% 20%, #5f4b8b, #392e63);
+      box-shadow: 0 7px 0 #241e3a, 0 8px 12px rgba(0, 0, 0, 0.4);
+      font-size: 2.4rem;
+      color: #fff5d6;
+    }
+
+    .mic.active {
+      background: radial-gradient(circle at 30% 20%, #ff79c6, #b44582);
+      box-shadow: 0 7px 0 #792b55, 0 8px 12px rgba(0, 0, 0, 0.4);
+      animation: pulse 1.3s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; transform: scale(1.02); }
+      100% { opacity: 1; }
+    }
+
+    .mic-status {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 1rem;
+      color: #b9b9d6;
+      background: #00000030;
+      padding: 8px 14px;
+      border-radius: 60px;
+      backdrop-filter: blur(5px);
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+      border: 1px solid #ffffff10;
+      min-height: 2.4rem;
+      font-weight: 300;
+      letter-spacing: 0.5px;
+    }
+
+    .zero {
+      grid-column: span 2;
+    }
+
+    button svg {
+      width: 1.8rem;
+      fill: currentColor;
+    }
+
+    .favicon-note {
+      display: none;
+    }
+
+    @media (max-width: 360px) {
+      button {
+        padding: 18px 4px;
+        font-size: 1.7rem;
+      }
+      .display {
+        font-size: 3rem;
+        min-height: 110px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="display" id="display">0</div>
+
+    <div class="buttons">
+      <button class="operator" id="clear">C</button>
+      <button class="operator" id="backspace">⌫</button>
+      <button class="operator" id="percent">%</button>
+      <button class="operator" id="divide">÷</button>
+
+      <button id="seven">7</button>
+      <button id="eight">8</button>
+      <button id="nine">9</button>
+      <button class="operator" id="multiply">×</button>
+
+      <button id="four">4</button>
+      <button id="five">5</button>
+      <button id="six">6</button>
+      <button class="operator" id="subtract">−</button>
+
+      <button id="one">1</button>
+      <button id="two">2</button>
+      <button id="three">3</button>
+      <button class="operator" id="add">+</button>
+
+      <button class="zero" id="zero">0</button>
+      <button id="decimal">,</button>
+      <button class="equals" id="equals">=</button>
+      <button class="mic" id="mic">🎤</button>
+    </div>
+
+    <div class="mic-status" id="micStatus">🎵 appuie sur le micro et parle (ex: 123,45)</div>
+  </div>
+
+  <script>
+    (function() {
+      const displayEl = document.getElementById('display');
+      const micBtn = document.getElementById('mic');
+      const micStatus = document.getElementById('micStatus');
+
+      let currentInput = '0';
+      let previousOperand = null;
+      let operator = null;
+      let waitingForSecondOperand = false;
+
+      function updateDisplay() {
+        displayEl.innerText = currentInput;
+      }
+
+      function inputDigit(digit) {
+        if (waitingForSecondOperand) {
+          currentInput = digit;
+          waitingForSecondOperand = false;
+        } else {
+          currentInput = currentInput === '0' ? digit : currentInput + digit;
+        }
+      }
+
+      function inputDecimal() {
+        if (waitingForSecondOperand) {
+          currentInput = '0.';
+          waitingForSecondOperand = false;
+          return;
+        }
+        if (!currentInput.includes('.')) {
+          currentInput += '.';
+        }
+      }
+
+      function clear() {
+        currentInput = '0';
+        previousOperand = null;
+        operator = null;
+        waitingForSecondOperand = false;
+      }
+
+      function backspace() {
+        if (currentInput.length > 1) {
+          currentInput = currentInput.slice(0, -1);
+        } else {
+          currentInput = '0';
+        }
+      }
+
+      function percent() {
+        const num = parseFloat(currentInput);
+        if (!isNaN(num)) {
+          currentInput = (num / 100).toString();
+        }
+      }
+
+      function handleOperator(nextOp) {
+        const inputValue = parseFloat(currentInput);
+
+        if (operator && waitingForSecondOperand) {
+          operator = nextOp;
+          return;
+        }
+
+        if (previousOperand === null) {
+          previousOperand = inputValue;
+        } else if (operator) {
+          const result = calculate(previousOperand, inputValue, operator);
+          currentInput = String(result);
+          previousOperand = result;
+        }
+
+        waitingForSecondOperand = true;
+        operator = nextOp;
+        updateDisplay();
+      }
+
+      function calculate(first, second, op) {
+        switch (op) {
+          case '+': return first + second;
+          case '-': return first - second;
+          case '×': return first * second;
+          case '÷': return first / second;
+          default: return second;
+        }
+      }
+
+      function equals() {
+        if (operator && previousOperand !== null && !waitingForSecondOperand) {
+          const inputValue = parseFloat(currentInput);
+          const result = calculate(previousOperand, inputValue, operator);
+          currentInput = String(result);
+          previousOperand = null;
+          operator = null;
+          waitingForSecondOperand = false;
+          updateDisplay();
+        }
+      }
+
+      let recognition = null;
+      let listening = false;
+
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = 'fr-FR';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = function() {
+          listening = true;
+          micBtn.classList.add('active');
+          micStatus.innerText = '🎤 écoute... parle clairement';
+        };
+
+        recognition.onerror = function(event) {
+          console.warn('Erreur reconnaissance:', event.error);
+          micStatus.innerText = '❌ erreur micro, réessaie';
+          micBtn.classList.remove('active');
+          listening = false;
+        };
+
+        recognition.onend = function() {
+          micBtn.classList.remove('active');
+          listening = false;
+          if (micStatus.innerText.includes('écoute')) {
+            micStatus.innerText = '🎵 appuie et parle (ex: 123,45)';
+          }
+        };
+
+        recognition.onresult = function(event) {
+          const last = event.results.length - 1;
+          const transcript = event.results[last][0].transcript.trim();
+          micStatus.innerText = `🗣️ "${transcript}"`;
+
+          const match = transcript.match(/\d+([,.]\d+)?/);
+          if (match) {
+            let numberStr = match[0].replace(',', '.');
+            if (!isNaN(parseFloat(numberStr))) {
+              if (waitingForSecondOperand) {
+                currentInput = numberStr;
+                waitingForSecondOperand = false;
+              } else {
+                currentInput = numberStr;
+              }
+              updateDisplay();
+              micStatus.innerText = `✓ ${numberStr} inséré`;
+            } else {
+              micStatus.innerText = '❌ nombre pas clair';
+            }
+          } else {
+            const lower = transcript.toLowerCase();
+            if (lower.includes('efface') || lower.includes('raz') || lower.includes('remise à zéro')) {
+              clear();
+              updateDisplay();
+              micStatus.innerText = '✓ tout effacé';
+            } else if (lower.includes('supprime') || lower.includes('retour')) {
+              backspace();
+              updateDisplay();
+              micStatus.innerText = '✓ un caractère supprimé';
+            } else if (lower.includes('pour cent')) {
+              percent();
+              updateDisplay();
+              micStatus.innerText = '% appliqué';
+            } else {
+              micStatus.innerText = '😕 dis un nombre ou "efface"';
+            }
+          }
+
+          setTimeout(() => {
+            if (!listening) micStatus.innerText = '🎵 appuie sur le micro pour parler';
+          }, 1800);
+        };
+      } else {
+        micBtn.disabled = true;
+        micBtn.style.opacity = '0.5';
+        micStatus.innerText = '🚫 micro non supporté sur ce navigateur';
+      }
+
+      function startListening() {
+        if (!recognition) {
+          alert("Reconnaissance vocale non disponible.");
+          return;
+        }
+        if (listening) {
+          recognition.stop();
+          return;
+        }
+        try {
+          recognition.start();
+        } catch (e) {
+          console.warn('Erreur démarrage:', e);
+        }
+      }
+
+      document.getElementById('clear').addEventListener('click', () => {
+        clear();
+        updateDisplay();
+      });
+
+      document.getElementById('backspace').addEventListener('click', () => {
+        backspace();
+        updateDisplay();
+      });
+
+      document.getElementById('percent').addEventListener('click', () => {
+        percent();
+        updateDisplay();
+      });
+
+      document.getElementById('divide').addEventListener('click', () => {
+        handleOperator('÷');
+        updateDisplay();
+      });
+
+      document.getElementById('multiply').addEventListener('click', () => {
+        handleOperator('×');
+        updateDisplay();
+      });
+
+      document.getElementById('subtract').addEventListener('click', () => {
+        handleOperator('-');
+        updateDisplay();
+      });
+
+      document.getElementById('add').addEventListener('click', () => {
+        handleOperator('+');
+        updateDisplay();
+      });
+
+      document.getElementById('equals').addEventListener('click', () => {
+        equals();
+      });
+
+      document.getElementById('seven').addEventListener('click', () => { inputDigit('7'); updateDisplay(); });
+      document.getElementById('eight').addEventListener('click', () => { inputDigit('8'); updateDisplay(); });
+      document.getElementById('nine').addEventListener('click', () => { inputDigit('9'); updateDisplay(); });
+      document.getElementById('four').addEventListener('click', () => { inputDigit('4'); updateDisplay(); });
+      document.getElementById('five').addEventListener('click', () => { inputDigit('5'); updateDisplay(); });
+      document.getElementById('six').addEventListener('click', () => { inputDigit('6'); updateDisplay(); });
+      document.getElementById('one').addEventListener('click', () => { inputDigit('1'); updateDisplay(); });
+      document.getElementById('two').addEventListener('click', () => { inputDigit('2'); updateDisplay(); });
+      document.getElementById('three').addEventListener('click', () => { inputDigit('3'); updateDisplay(); });
+      document.getElementById('zero').addEventListener('click', () => { inputDigit('0'); updateDisplay(); });
+
+      document.getElementById('decimal').addEventListener('click', () => {
+        inputDecimal();
+        updateDisplay();
+      });
+
+      micBtn.addEventListener('click', startListening);
+
+      updateDisplay();
+    })();
+  </script>
+</body>
+</html>
